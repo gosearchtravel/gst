@@ -1,0 +1,22 @@
+model PageContent {
+  key     String @id
+  content String
+}
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model BlogPost {
+  id        Int      @id @default(autoincrement())
+  city      String
+  image     String
+  excerpt   String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
