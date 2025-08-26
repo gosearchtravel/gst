@@ -1,13 +1,24 @@
 /** @format */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+// Force this route to be dynamic (not pre-rendered)
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
-	const posts = await prisma.blogPost.findMany();
-	return NextResponse.json(posts);
+	try {
+		// Import Prisma dynamically to avoid build-time issues
+		const { PrismaClient } = await import('@prisma/client');
+		const prisma = new PrismaClient();
+
+		const posts = await prisma.blogPost.findMany();
+		await prisma.$disconnect();
+
+		return NextResponse.json(posts);
+	} catch (error) {
+		console.error('Error fetching blog posts:', error);
+		return NextResponse.json({ error: 'Failed to fetch blog posts' }, { status: 500 });
+	}
 }
 
 export async function POST(req: NextRequest) {
@@ -18,7 +29,14 @@ export async function POST(req: NextRequest) {
 		if (!city || !image || !excerpt || !content) {
 			return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
 		}
+
+		// Import Prisma dynamically to avoid build-time issues
+		const { PrismaClient } = await import('@prisma/client');
+		const prisma = new PrismaClient();
+
 		const post = await prisma.blogPost.create({ data: { city, image, excerpt, content } });
+		await prisma.$disconnect();
+
 		return NextResponse.json(post);
 	} catch (e) {
 		const message = e instanceof Error ? e.message : 'Unknown error';
