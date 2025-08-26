@@ -11,6 +11,7 @@ interface Hotel {
   name?: string;
   hotelId?: string;
   rating?: number;
+  ratingText?: string;
   address?: {
     lines?: string[];
   } | string;
@@ -19,6 +20,7 @@ interface Hotel {
   description?: string;
   amenities?: string[];
   nearbyAttractions?: Array<{ name: string; distance: string }>;
+  reviews?: string;
 }
 
 interface HotelOffer {
@@ -455,7 +457,11 @@ export default function HotelDetail() {
                   )}
                 </h1>
                 <p className="text-gray-600 mb-2">
-                  {hotel?.address?.lines?.join(', ') || hotel?.address || 'Address not available'}
+                  {typeof hotel?.address === 'object' && hotel?.address?.lines
+                    ? hotel.address.lines.join(', ')
+                    : typeof hotel?.address === 'string'
+                      ? hotel.address
+                      : 'Address not available'}
                 </p>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
@@ -464,7 +470,7 @@ export default function HotelDetail() {
                     </div>
                     <div>
                       <span className="font-medium text-gray-900">
-                        {hotel?.rating >= 9 ? 'Excellent' : hotel?.rating >= 8 ? 'Very Good' : hotel?.rating >= 7 ? 'Good' : 'Fair'}
+                        {(hotel?.rating ?? 8) >= 9 ? 'Excellent' : (hotel?.rating ?? 8) >= 8 ? 'Very Good' : (hotel?.rating ?? 8) >= 7 ? 'Good' : 'Fair'}
                       </span>
                       <span className="text-gray-600 text-sm ml-1">(Reviews)</span>
                     </div>
@@ -576,9 +582,9 @@ export default function HotelDetail() {
                       </tr>
                     </thead>
                     <tbody>
-                      {hotelOffer?.offers?.length > 0 ? (
+                      {hotelOffer?.offers && hotelOffer.offers.length > 0 ? (
                         hotelOffer.offers.map((offer, index) => (
-                          <tr key={offer.id || `offer-${index}`} className="border-b">
+                          <tr key={`offer-${index}`} className="border-b">
                             <td className="p-4">
                               <div className="flex gap-4">
                                 <img
@@ -668,13 +674,13 @@ export default function HotelDetail() {
               {/* Property Overview */}
               <div className="bg-white rounded-lg border p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">About this property</h2>
-                <p className="text-gray-700 mb-6">{hotel.description}</p>
+                <p className="text-gray-700 mb-6">{hotel?.description || 'Property description not available'}</p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-3">Most popular facilities</h3>
                     <div className="space-y-2">
-                      {hotel.amenities.slice(0, 5).map((amenity, index) => (
+                      {hotel?.amenities?.slice(0, 5).map((amenity, index) => (
                         <div key={index} className="flex items-center gap-2 text-sm text-gray-700">
                           <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -688,7 +694,7 @@ export default function HotelDetail() {
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-3">Nearby attractions</h3>
                     <div className="space-y-2">
-                      {hotel.nearbyAttractions.map((attraction, index) => (
+                      {hotel?.nearbyAttractions?.map((attraction, index) => (
                         <div key={index} className="flex justify-between text-sm">
                           <span className="text-gray-700">{attraction.name}</span>
                           <span className="text-gray-500">{attraction.distance}</span>
@@ -705,11 +711,11 @@ export default function HotelDetail() {
                   <h2 className="text-xl font-bold text-gray-900">Guest reviews</h2>
                   <div className="flex items-center gap-2">
                     <div className="bg-blue-600 text-white px-3 py-1 rounded font-bold text-lg">
-                      {hotel.rating}
+                      {hotel?.rating || '8.0'}
                     </div>
                     <div>
-                      <div className="font-medium text-gray-900">{hotel.ratingText}</div>
-                      <div className="text-sm text-gray-600">{hotel.reviews}</div>
+                      <div className="font-medium text-gray-900">{hotel?.ratingText || 'Very good'}</div>
+                      <div className="text-sm text-gray-600">{hotel?.reviews || 'Guest reviews'}</div>
                     </div>
                   </div>
                 </div>

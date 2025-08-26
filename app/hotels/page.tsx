@@ -261,7 +261,7 @@ export default function HotelsPage() {
   const hotelMarkers = hotels
     .filter((hotel) => {
       const h = hotel.hotel || hotel;
-      return h.geoCode && h.geoCode.latitude && h.geoCode.longitude;
+      return h && h.geoCode && h.geoCode.latitude && h.geoCode.longitude;
     })
     .map((hotel) => {
       const h = hotel.hotel || hotel;
@@ -272,7 +272,11 @@ export default function HotelsPage() {
         lat: h.geoCode!.latitude,
         lng: h.geoCode!.longitude,
         price: offer.price?.total || "-",
-        address: h.address?.lines?.[0] || "",
+        address: typeof h.address === 'object' && h.address?.lines
+          ? h.address.lines[0] || ""
+          : typeof h.address === 'string'
+            ? h.address
+            : "",
         image: h.media?.[0]?.uri || "/popdest/abudhabi.jpg",
         rating: h.rating?.toString() || "-",
         phone: h.contact?.phone || "No phone",
@@ -346,6 +350,10 @@ export default function HotelsPage() {
                   h = hotel;
                   offer = {};
                 }
+
+                // Skip if h is undefined or null
+                if (!h) return null;
+
                 return (
                   <div
                     key={h.hotelId || h.id}
@@ -451,7 +459,13 @@ export default function HotelsPage() {
                         {/* Hotel Name and Location */}
                         <div className="mb-3">
                           <h3 className="text-lg font-bold text-gray-900 mb-1">{h.name}</h3>
-                          <p className="text-gray-600 text-sm">{h.address?.lines?.[0] || 'Location not specified'}</p>
+                          <p className="text-gray-600 text-sm">
+                            {typeof h.address === 'object' && h.address?.lines
+                              ? h.address.lines[0] || 'Location not specified'
+                              : typeof h.address === 'string'
+                                ? h.address
+                                : 'Location not specified'}
+                          </p>
                         </div>
 
                         {/* Rating */}
