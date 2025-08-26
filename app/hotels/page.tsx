@@ -11,6 +11,49 @@ import "leaflet/dist/leaflet.css";
 // Dynamic import for MapWithMarkers to avoid SSR issues with Leaflet
 const MapWithMarkers = dynamic(() => import("./MapWithMarkers"), { ssr: false });
 
+interface HotelData {
+  hotel?: {
+    hotelId?: string;
+    id?: string;
+    name?: string;
+    geoCode?: {
+      latitude: number;
+      longitude: number;
+    };
+    address?: {
+      lines?: string[];
+    };
+    media?: Array<{ uri: string }>;
+    rating?: number;
+    contact?: {
+      phone?: string;
+    };
+  };
+  hotelId?: string;
+  id?: string;
+  name?: string;
+  geoCode?: {
+    latitude: number;
+    longitude: number;
+  };
+  address?: {
+    lines?: string[];
+  };
+  media?: Array<{ uri: string }>;
+  rating?: number;
+  contact?: {
+    phone?: string;
+  };
+  offers?: Array<{
+    price?: {
+      total?: string;
+    };
+    cancellationPolicy?: {
+      description?: string;
+    };
+  }>;
+}
+
 // City name to Amadeus city code mapping
 const cityCodes: Record<string, string> = {
   "mecca": "JED",
@@ -150,7 +193,7 @@ export default function HotelsPage() {
   const [checkIn, setCheckIn] = useState(searchParams.get("checkIn") || "");
   const [checkOut, setCheckOut] = useState(searchParams.get("checkOut") || "");
   const [guests, setGuests] = useState(Number(searchParams.get("guests")) || 2);
-  const [hotels, setHotels] = useState([]);
+  const [hotels, setHotels] = useState<HotelData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [highlightedHotelId, setHighlightedHotelId] = useState<string | null>(null);
@@ -216,22 +259,22 @@ export default function HotelsPage() {
 
   // Helper: get hotel markers
   const hotelMarkers = hotels
-    .filter((hotel: any) => {
-      let h = hotel.hotel || hotel;
+    .filter((hotel) => {
+      const h = hotel.hotel || hotel;
       return h.geoCode && h.geoCode.latitude && h.geoCode.longitude;
     })
-    .map((hotel: any) => {
-      let h = hotel.hotel || hotel;
-      let offer = hotel.offers?.[0] || {};
+    .map((hotel) => {
+      const h = hotel.hotel || hotel;
+      const offer = hotel.offers?.[0] || {};
       return {
-        id: h.hotelId || h.id,
-        name: h.name,
-        lat: h.geoCode.latitude,
-        lng: h.geoCode.longitude,
+        id: h.hotelId || h.id || 'unknown',
+        name: h.name || 'Unknown Hotel',
+        lat: h.geoCode!.latitude,
+        lng: h.geoCode!.longitude,
         price: offer.price?.total || "-",
         address: h.address?.lines?.[0] || "",
         image: h.media?.[0]?.uri || "/popdest/abudhabi.jpg",
-        rating: h.rating || "-",
+        rating: h.rating?.toString() || "-",
         phone: h.contact?.phone || "No phone",
         cancellation: offer.cancellationPolicy?.description || "Free cancellation",
       };
@@ -293,7 +336,7 @@ export default function HotelsPage() {
             <div className="space-y-6">
               {error && <div className="text-red-600 font-bold mb-2">{error}</div>}
               {loading && <div className="text-orange-600 font-bold">Loading hotels...</div>}
-              {Array.isArray(hotels) && hotels.length > 0 && hotels.map((hotel: any) => {
+              {Array.isArray(hotels) && hotels.length > 0 && hotels.map((hotel) => {
                 // Defensive: Amadeus hotel API returns hotel + offers structure
                 let h, offer;
                 if (hotel && typeof hotel === 'object' && 'hotel' in hotel && Array.isArray(hotel.offers)) {

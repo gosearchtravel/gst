@@ -4,6 +4,36 @@ import React from 'react';
 
 type TabType = 'flights' | 'hotels' | 'holidays' | 'carhire';
 
+interface FlightResults {
+  data: Array<{
+    id: string;
+    price: {
+      total: string;
+      currency: string;
+    };
+    itineraries: Array<{
+      segments: Array<{
+        departure: {
+          iataCode: string;
+          at: string;
+        };
+        arrival: {
+          iataCode: string;
+          at: string;
+        };
+      }>;
+    }>;
+    validatingAirlineCodes: string[];
+  }>;
+}
+
+interface HotelResult {
+  hotel: {
+    hotelId: string;
+    name: string;
+  };
+}
+
 export default function SearchTabsForm() {
   const [tab, setTab] = React.useState<TabType>('flights');
   // Flights search state
@@ -13,7 +43,7 @@ export default function SearchTabsForm() {
   const [returnDate, setReturnDate] = React.useState('');
   const [adults, setAdults] = React.useState(1);
   const [loading, setLoading] = React.useState(false);
-  const [results, setResults] = React.useState<any>(null);
+  const [results, setResults] = React.useState<FlightResults | null>(null);
   const [error, setError] = React.useState('');
 
   // Hotels search state
@@ -22,7 +52,7 @@ export default function SearchTabsForm() {
   const [hotelCheckOut, setHotelCheckOut] = React.useState('');
   const [hotelGuests, setHotelGuests] = React.useState(1);
   const [hotelLoading, setHotelLoading] = React.useState(false);
-  const [hotelResults, setHotelResults] = React.useState<any[]>([]);
+  const [hotelResults, setHotelResults] = React.useState<HotelResult[]>([]);
   const [hotelError, setHotelError] = React.useState('');
 
   // City name to Amadeus city code mapping
@@ -432,10 +462,10 @@ export default function SearchTabsForm() {
                     <h3 className="text-lg font-bold mb-2">Results</h3>
                     {results.data && results.data.length > 0 ? (
                       <ul className="space-y-4">
-                        {results.data.map((offer: any, idx: number) => (
+                        {results.data.map((offer, idx) => (
                           <li key={idx} className="border rounded p-4">
                             <div className="font-semibold">Price: {offer.price.total} {offer.price.currency}</div>
-                            <div>Itinerary: {offer.itineraries.map((it: any) => it.segments.map((seg: any) => `${seg.departure.iataCode} → ${seg.arrival.iataCode} (${seg.departure.at.split('T')[0]})`).join(', ')).join(' | ')}</div>
+                            <div>Itinerary: {offer.itineraries.map((it) => it.segments.map((seg) => `${seg.departure.iataCode} → ${seg.arrival.iataCode} (${seg.departure.at.split('T')[0]})`).join(', ')).join(' | ')}</div>
                             <div>Airlines: {offer.validatingAirlineCodes.join(', ')}</div>
                           </li>
                         ))}

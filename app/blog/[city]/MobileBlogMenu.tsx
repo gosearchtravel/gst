@@ -1,7 +1,12 @@
 "use client";
 import { useState } from "react";
 
-export default function MobileBlogMenu({ allPosts }: { allPosts: any[] }) {
+interface BlogPost {
+  id: number;
+  city: string;
+}
+
+export default function MobileBlogMenu({ allPosts }: { allPosts: BlogPost[] }) {
   const [open, setOpen] = useState(false);
   return (
     <>

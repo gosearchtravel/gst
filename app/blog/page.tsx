@@ -6,6 +6,17 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
+interface BlogPost {
+  id: number;
+  title: string;
+  content: string;
+  city: string;
+  imagePath: string;
+  image: string;
+  excerpt: string;
+  createdAt: string;
+}
+
 export default function BlogPage() {
   // Utility to convert city names to one-word, lowercase slugs for URLs
   function citySlug(city: string) {
@@ -20,7 +31,7 @@ export default function BlogPage() {
   }
 
   const router = useRouter();
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
   useEffect(() => {
     fetch('/api/blog').then(res => res.json()).then(setPosts);
   }, []);

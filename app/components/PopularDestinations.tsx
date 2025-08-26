@@ -57,7 +57,7 @@ const tabs = [
 ];
 
 export default function PopularDestinationsCarousel() {
-  const carouselRef = useRef<any>(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState('europe');
 
   useEffect(() => {

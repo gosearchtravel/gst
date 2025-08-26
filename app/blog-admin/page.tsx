@@ -1,20 +1,38 @@
 "use client";
 import { useEffect, useState } from 'react';
 
+interface BlogPost {
+  id: number;
+  title: string;
+  content: string;
+  city: string;
+  imagePath: string;
+  image: string;
+  excerpt: string;
+  createdAt: string;
+}
+
+interface BlogForm {
+  city: string;
+  image: string;
+  excerpt: string;
+  content: string;
+}
+
 export default function BlogAdmin() {
-  const [posts, setPosts] = useState([]);
-  const [form, setForm] = useState({ city: '', image: '', excerpt: '', content: '' });
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [form, setForm] = useState<BlogForm>({ city: '', image: '', excerpt: '', content: '' });
   const [editingId, setEditingId] = useState<number | null>(null);
 
   useEffect(() => {
     fetch('/api/blog').then(res => res.json()).then(setPosts);
   }, []);
 
-  function handleChange(e: any) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  async function handleSubmit(e: any) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (editingId) {
       await fetch(`/api/blog/${editingId}`, {
@@ -39,7 +57,7 @@ export default function BlogAdmin() {
     fetch('/api/blog').then(res => res.json()).then(setPosts);
   }
 
-  function handleEdit(post: any) {
+  function handleEdit(post: BlogPost) {
     setForm(post);
     setEditingId(post.id);
   }
@@ -55,7 +73,7 @@ export default function BlogAdmin() {
         <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">{editingId ? 'Update' : 'Add'} Post</button>
       </form>
       <ul className="space-y-4">
-        {posts.map((post: any) => (
+        {posts.map((post) => (
           <li key={post.id} className="border p-4 rounded flex flex-col">
             <div className="font-bold">{post.city}</div>
             <div className="text-sm text-gray-600">{post.city}</div>

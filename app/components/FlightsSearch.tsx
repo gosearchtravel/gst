@@ -1,5 +1,50 @@
 "use client";
 
+interface FlightSegment {
+  departure: {
+    iataCode: string;
+    at: string;
+    airport?: string;
+  };
+  arrival: {
+    iataCode: string;
+    at: string;
+    airport?: string;
+  };
+  carrierCode: string;
+  number: string;
+  aircraft: {
+    code: string;
+  };
+  operating?: {
+    airlineCode: string;
+  };
+  marketing?: {
+    airlineCode: string;
+  };
+}
+
+interface FlightOffer {
+  id: string;
+  itineraries: {
+    segments: FlightSegment[];
+    duration?: string;
+  }[];
+  price: {
+    total: string;
+    currency: string;
+  };
+  numberOfBookableSeats?: number;
+}
+
+interface FlightResults {
+  data: FlightOffer[];
+}
+
+interface ApiError {
+  detail: string;
+}
+
 function getTimeParts(dt: string) {
   try {
     const d = new Date(dt);
@@ -24,7 +69,7 @@ export default function FlightsSearch({ selectedDate, setOrigin, setDestination,
   const [returnDate, setReturnDate] = useState("");
   const [adults, setAdults] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState<any>(null);
+  const [results, setResults] = useState<FlightResults | null>(null);
   const [error, setError] = useState("");
   const [visibleCount, setVisibleCount] = useState(10);
   const [progress, setProgress] = useState(0);
@@ -76,12 +121,12 @@ export default function FlightsSearch({ selectedDate, setOrigin, setDestination,
           throw new Error(apiError);
         }
         if (data?.errors && data.errors.length > 0) {
-          setError(data.errors.map((e: any) => e.detail).join("; "));
+          setError(data.errors.map((e: ApiError) => e.detail).join("; "));
         } else {
           setResults(data);
         }
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setLoading(false);
       }
@@ -109,7 +154,7 @@ export default function FlightsSearch({ selectedDate, setOrigin, setDestination,
       setDepartureDate(selectedDate);
       // Always trigger a search when the date changes and origin/destination are set
       if (origin && destination) {
-        searchFlights({ preventDefault: () => { } } as any);
+        searchFlights({ preventDefault: () => { } } as React.FormEvent<HTMLFormElement>);
       }
     }
   }, [selectedDate, origin, destination]);
@@ -146,12 +191,12 @@ export default function FlightsSearch({ selectedDate, setOrigin, setDestination,
         throw new Error(apiError);
       }
       if (data?.errors && data.errors.length > 0) {
-        setError(data.errors.map((e: any) => e.detail).join("; "));
+        setError(data.errors.map((e: ApiError) => e.detail).join("; "));
       } else {
         setResults(data);
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
@@ -272,7 +317,7 @@ export default function FlightsSearch({ selectedDate, setOrigin, setDestination,
                       Showing {Math.min(visibleCount, results.data.length)} of {results.data.length} result{results.data.length > 1 ? 's' : ''} found
                     </div>
                     <ul className="space-y-4">
-                      {results.data.slice(0, visibleCount).map((offer: any, idx: number) => {
+                      {results.data.slice(0, visibleCount).map((offer, idx) => {
                         const isExpanded = expandedIdx === idx;
                         return (
                           <>
@@ -303,7 +348,7 @@ export default function FlightsSearch({ selectedDate, setOrigin, setDestination,
                                   className={`lg:w-[400px] flex flex-col gap-4 p-3 border-r border-gray-300 cursor-pointer hover:bg-blue-50 transition justify-center items-center ${isExpanded ? 'bg-blue-50' : ''}`}
                                   onClick={() => setExpandedIdx(isExpanded ? null : idx)}
                                 >
-                                  {offer.itineraries.map((it: any, i: number) => (
+                                  {offer.itineraries.map((it, i) => (
                                     <div key={i} className="flex gap-6 items-center">
                                       {/* Departure time/code */}
                                       <div className="flex flex-col">
@@ -312,7 +357,7 @@ export default function FlightsSearch({ selectedDate, setOrigin, setDestination,
                                       </div>
 
                                       <div className="flex flex-col">
-                                        <span className="text-xs text-gray-500 mb-1">{formatDuration(it.duration)}</span>
+                                        <span className="text-xs text-gray-500 mb-1">{it.duration ? formatDuration(it.duration) : 'N/A'}</span>
                                         <PlaneLineIcon className="w-32 h-6" />
                                         <span className="text-xs text-teal-600 mt-1">{it.segments.length === 1 ? 'Direct' : `${it.segments.length - 1} stop${it.segments.length - 1 > 1 ? 's' : ''}`}</span>
                                       </div>
@@ -352,7 +397,7 @@ export default function FlightsSearch({ selectedDate, setOrigin, setDestination,
                                   <div className="bg-white rounded-xl shadow p-4 border flex flex-col gap-2">
                                     <div className="flex items-center justify-between mb-2">
                                       <div className="font-bold text-base">Depart • {typeof window !== 'undefined' ? formatDate(offer.itineraries[0].segments[0].departure.at) : ''}</div>
-                                      <div className="text-right text-sm font-semibold">{formatDuration(offer.itineraries[0].duration)}</div>
+                                      <div className="text-right text-sm font-semibold">{offer.itineraries[0].duration ? formatDuration(offer.itineraries[0].duration) : 'N/A'}</div>
                                     </div>
                                     <div className="flex items-center gap-3 mb-2">
                                       <span className="bg-red-700 text-white text-xs px-2 py-1 rounded">{offer.itineraries[0].segments[0].operating?.airlineCode || offer.itineraries[0].segments[0].marketing?.airlineCode}</span>
@@ -377,7 +422,7 @@ export default function FlightsSearch({ selectedDate, setOrigin, setDestination,
                                     <div className="bg-white rounded-xl shadow p-4 border flex flex-col gap-2">
                                       <div className="flex items-center justify-between mb-2">
                                         <div className="font-bold text-base">Return • {typeof window !== 'undefined' ? formatDate(offer.itineraries[1].segments[0].departure.at) : ''}</div>
-                                        <div className="text-right text-sm font-semibold">{formatDuration(offer.itineraries[1].duration)}</div>
+                                        <div className="text-right text-sm font-semibold">{offer.itineraries[1].duration ? formatDuration(offer.itineraries[1].duration) : 'N/A'}</div>
                                       </div>
                                       <div className="flex items-center gap-3 mb-2">
                                         <span className="bg-red-700 text-white text-xs px-2 py-1 rounded">{offer.itineraries[1].segments[0].operating?.airlineCode || offer.itineraries[1].segments[0].marketing?.airlineCode}</span>

@@ -2,8 +2,19 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
+interface BlogPost {
+  id: number;
+  title: string;
+  content: string;
+  city: string;
+  imagePath: string;
+  image: string;
+  excerpt: string;
+  createdAt: string;
+}
+
 export default function BlogPostsCarousel() {
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
 
   useEffect(() => {
     fetch('/api/blog').then(res => res.json()).then(setPosts);

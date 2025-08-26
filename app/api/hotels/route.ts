@@ -1,9 +1,28 @@
 /** @format */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(req: Request) {
-	const body = await req.json();
+interface GeoCode {
+	latitude: number;
+	longitude: number;
+}
+
+interface HotelLocation {
+	hotelId: string;
+	geoCode: GeoCode;
+}
+
+interface HotelWithLocation {
+	hotelId: string;
+	geoCode?: GeoCode;
+}
+
+interface HotelOffer {
+	hotel: HotelWithLocation;
+}
+
+export async function GET(request: NextRequest) {
+	const body = await request.json();
 	const { city, checkIn, checkOut, guests } = body;
 
 	// Use correct env variable names for Amadeus API
@@ -32,11 +51,11 @@ export async function POST(req: Request) {
 	// Limit to first 20 hotels to avoid API limits
 	const limitedHotels = hotelsArray.slice(0, 20);
 
-	const hotelIdToGeo = limitedHotels.reduce((acc: any, h: any) => {
+	const hotelIdToGeo = limitedHotels.reduce((acc: Record<string, GeoCode>, h: HotelLocation) => {
 		acc[h.hotelId] = h.geoCode;
 		return acc;
 	}, {});
-	const hotelIds = limitedHotels.map((h: any) => h.hotelId).join(',');
+	const hotelIds = limitedHotels.map((h: HotelLocation) => h.hotelId).join(',');
 
 	if (!hotelIds) {
 		return NextResponse.json({
@@ -68,7 +87,7 @@ export async function POST(req: Request) {
 	let offers = Array.isArray(offersData.data) ? offersData.data : [];
 
 	// Merge geoCode into each hotel
-	offers = offers.map((item: any) => {
+	offers = offers.map((item: HotelOffer) => {
 		if (item.hotel && item.hotel.hotelId && hotelIdToGeo[item.hotel.hotelId]) {
 			item.hotel.geoCode = hotelIdToGeo[item.hotel.hotelId];
 		}

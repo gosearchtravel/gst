@@ -2,15 +2,59 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, Star, Wifi, Car, Coffee, Dumbbell, MapPin, Calendar, Users, CreditCard, Award, ThumbsUp, ThumbsDown, MoreHorizontal } from 'lucide-react';
 import Header from '../../components/header';
 import Footer from '../../components/footer';
+
+// Define interfaces for type safety
+interface Hotel {
+  id?: string;
+  name?: string;
+  hotelId?: string;
+  rating?: number;
+  address?: {
+    lines?: string[];
+  } | string;
+  media?: Array<{ uri: string }>;
+  stars?: number;
+  description?: string;
+  amenities?: string[];
+  nearbyAttractions?: Array<{ name: string; distance: string }>;
+}
+
+interface HotelOffer {
+  hotel?: Hotel;
+  hotelId?: string;
+  id?: string;
+  offers?: Array<{
+    room?: {
+      typeEstimated?: {
+        category?: string;
+        beds?: string;
+      };
+      description?: {
+        text?: string;
+      };
+    };
+    price?: {
+      total?: string;
+      currency?: string;
+      variations?: {
+        changes?: Array<{ total?: string }>;
+      };
+    };
+    policies?: {
+      cancellation?: {
+        type?: string;
+      };
+    };
+  }>;
+}
 
 export default function HotelDetail() {
   const params = useParams();
   const router = useRouter();
-  const [hotel, setHotel] = useState<any>(null);
-  const [hotelOffer, setHotelOffer] = useState<any>(null);
+  const [hotel, setHotel] = useState<Hotel | null>(null);
+  const [hotelOffer, setHotelOffer] = useState<HotelOffer | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [showAllPhotos, setShowAllPhotos] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -19,18 +63,14 @@ export default function HotelDetail() {
   const hotelId = params.id as string;
 
   // Hotel images - use real images if available, fallback to sample
-  const hotelImages = hotel?.media?.length > 0
-    ? hotel.media.map((media: any) => media.uri)
-    : [
-      "/popdest/london.jpg",
-      "/popdest/dubai.jpg",
-      "/popdest/paris.jpg",
-      "/popdest/newyork.webp",
-      "/popdest/tokyo.webp",
-      "/popdest/singapore.webp"
-    ];
-
-  // Sample reviews data (keeping for now until we get real reviews from API)
+  const hotelImages = hotel?.media?.length ? hotel.media.map((media) => media.uri) : [
+    "/popdest/london.jpg",
+    "/popdest/dubai.jpg",
+    "/popdest/paris.jpg",
+    "/popdest/newyork.webp",
+    "/popdest/tokyo.webp",
+    "/popdest/singapore.webp"
+  ];  // Sample reviews data (keeping for now until we get real reviews from API)
   const reviews = [
     {
       id: 1,
@@ -204,7 +244,7 @@ export default function HotelDetail() {
         }
 
         // Find the specific hotel by ID (try multiple fields and be more flexible)
-        const foundHotel = data.data.find((item: any) => {
+        const foundHotel = data.data.find((item: HotelOffer) => {
           const itemHotelId = item.hotel?.hotelId || item.hotelId || item.id;
           const itemId = item.hotel?.id || item.id;
 
@@ -510,7 +550,7 @@ export default function HotelDetail() {
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  <span className="font-medium">You're eligible for a Genius discount!</span>
+                  <span className="font-medium">You&apos;re eligible for a Genius discount!</span>
                 </div>
                 <p className="text-green-700 text-sm mt-1">
                   To save at this property, all you have to do is sign in.
@@ -537,8 +577,8 @@ export default function HotelDetail() {
                     </thead>
                     <tbody>
                       {hotelOffer?.offers?.length > 0 ? (
-                        hotelOffer.offers.map((offer: any, index: number) => (
-                          <tr key={index} className="border-b">
+                        hotelOffer.offers.map((offer, index) => (
+                          <tr key={offer.id || `offer-${index}`} className="border-b">
                             <td className="p-4">
                               <div className="flex gap-4">
                                 <img
@@ -634,7 +674,7 @@ export default function HotelDetail() {
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-3">Most popular facilities</h3>
                     <div className="space-y-2">
-                      {hotel.amenities.slice(0, 5).map((amenity: string, index: number) => (
+                      {hotel.amenities.slice(0, 5).map((amenity, index) => (
                         <div key={index} className="flex items-center gap-2 text-sm text-gray-700">
                           <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -648,7 +688,7 @@ export default function HotelDetail() {
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-3">Nearby attractions</h3>
                     <div className="space-y-2">
-                      {hotel.nearbyAttractions.map((attraction: any, index: number) => (
+                      {hotel.nearbyAttractions.map((attraction, index) => (
                         <div key={index} className="flex justify-between text-sm">
                           <span className="text-gray-700">{attraction.name}</span>
                           <span className="text-gray-500">{attraction.distance}</span>
