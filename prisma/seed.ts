@@ -1,8 +1,8 @@
 /** @format */
 
-const { PrismaClient } = require('@prisma/client');
-const { blogPosts } = require('../app/data/blogPosts');
-const { blogDetails } = require('../app/data/blogDetails');
+import { PrismaClient } from '@prisma/client';
+import { blogPosts } from '../app/data/_blogPosts';
+import { blogDetails } from '../app/data/_blogDetails';
 
 const prisma = new PrismaClient();
 
