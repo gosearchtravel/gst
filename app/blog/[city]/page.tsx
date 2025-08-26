@@ -11,8 +11,9 @@ function normalizeCityParam(param: string) {
   return param.toLowerCase().replace(/[\s-]+/g, '');
 }
 
-export default async function BlogCityPage({ params }: { params: { city: string } }) {
-  const cityKey = normalizeCityParam(params.city);
+export default async function BlogCityPage({ params }: { params: Promise<{ city: string }> }) {
+  const { city } = await params;
+  const cityKey = normalizeCityParam(city);
   // Normalize city for case-insensitive and whitespace-insensitive match
   const allPosts = await prisma.blogPost.findMany();
   const blog = allPosts.find(

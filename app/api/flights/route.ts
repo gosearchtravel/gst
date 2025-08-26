@@ -1,8 +1,8 @@
 /** @format */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
 	const { origin, destination, departureDate, returnDate, adults } = await request.json();
 
 	// Amadeus API credentials (replace with your actual key/secret)

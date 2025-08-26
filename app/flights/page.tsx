@@ -23,7 +23,7 @@ function getNextDays(numDays: number) {
 
 export default function FlightsPage() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10));
-  const [datePrices, setDatePrices] = useState([]);
+  const [datePrices, setDatePrices] = useState<Array<{ date: string; price: number }>>([]);
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
 

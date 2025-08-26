@@ -136,7 +136,7 @@ export default function HotelDetail() {
 
   // Sample hotel data
   const sampleHotel = {
-    id: params.id,
+    id: Array.isArray(params.id) ? params.id[0] : params.id,
     name: "The Z Hotel Covent Garden",
     stars: 3,
     address: "31-33 Bedford Street, London, WC2E 9ED",
