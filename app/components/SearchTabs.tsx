@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import { Search } from 'lucide-react';
+import PriceCalendar from '../../components/ui/price-calendar';
 
 type TabType = 'flights' | 'hotels' | 'holidays' | 'carhire';
 
@@ -52,6 +54,27 @@ export default function SearchTabsForm() {
   const [hotelLoading, setHotelLoading] = React.useState(false);
   const [hotelResults, setHotelResults] = React.useState<HotelResult[]>([]);
   const [hotelError, setHotelError] = React.useState('');
+
+  // Car hire search state
+  const [carPickupLocation, setCarPickupLocation] = React.useState('');
+  const [carPickupDate, setCarPickupDate] = React.useState('');
+  const [carPickupTime, setCarPickupTime] = React.useState('');
+  const [carDropoffDate, setCarDropoffDate] = React.useState('');
+  const [carDropoffTime, setCarDropoffTime] = React.useState('');
+
+  // Calendar state
+  const [showCalendar, setShowCalendar] = React.useState(false);
+  const [calendarType, setCalendarType] = React.useState<'departure' | 'return' | 'checkin' | 'checkout' | 'car-pickup' | 'car-dropoff'>('departure');
+  const [calendarSearchType, setCalendarSearchType] = React.useState<'flight' | 'hotel' | 'car'>('flight');
+  const [calendarPosition, setCalendarPosition] = React.useState<{ top: number; left: number; width: number } | undefined>();
+
+  // Refs for date input fields
+  const departureInputRef = useRef<HTMLInputElement>(null);
+  const returnInputRef = useRef<HTMLInputElement>(null);
+  const checkinInputRef = useRef<HTMLInputElement>(null);
+  const checkoutInputRef = useRef<HTMLInputElement>(null);
+  const carPickupInputRef = useRef<HTMLInputElement>(null);
+  const carDropoffInputRef = useRef<HTMLInputElement>(null);
 
   // City name to Amadeus city code mapping
   const cityCodes: Record<string, string> = {
@@ -193,6 +216,94 @@ export default function SearchTabsForm() {
     window.location.href = `/hotels?${params.toString()}`;
   }
 
+  function handleCarHireSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const locationInput = carPickupLocation.trim().toLowerCase();
+    const validDates = carPickupDate && carDropoffDate && carPickupDate <= carDropoffDate;
+    if (!validDates) {
+      alert("Please select valid pickup and drop-off dates.");
+      return;
+    }
+    const params = new URLSearchParams({
+      location: locationInput,
+      pickupDate: carPickupDate,
+      pickupTime: carPickupTime,
+      dropoffDate: carDropoffDate,
+      dropoffTime: carDropoffTime,
+    });
+    window.location.href = `/car-hire?${params.toString()}`;
+  }
+
+  function handleHolidaysSearch(e: React.FormEvent) {
+    e.preventDefault();
+    // For now, redirect to a placeholder or existing page
+    alert("Holidays search coming soon!");
+  }
+
+  // Calendar handlers
+  const openCalendar = (type: 'departure' | 'return' | 'checkin' | 'checkout' | 'car-pickup' | 'car-dropoff', searchType: 'flight' | 'hotel' | 'car') => {
+    setCalendarType(type);
+    setCalendarSearchType(searchType);
+
+    // Calculate position based on input field
+    let inputRef;
+    switch (type) {
+      case 'departure':
+        inputRef = departureInputRef;
+        break;
+      case 'return':
+        inputRef = returnInputRef;
+        break;
+      case 'checkin':
+        inputRef = checkinInputRef;
+        break;
+      case 'checkout':
+        inputRef = checkoutInputRef;
+        break;
+      case 'car-pickup':
+        inputRef = carPickupInputRef;
+        break;
+      case 'car-dropoff':
+        inputRef = carDropoffInputRef;
+        break;
+    }
+
+    if (inputRef?.current) {
+      const rect = inputRef.current.getBoundingClientRect();
+      setCalendarPosition({
+        top: rect.bottom + window.scrollY + 4,
+        left: rect.left + window.scrollX,
+        width: rect.width
+      });
+    }
+
+    setShowCalendar(true);
+  };
+
+  const handleDateSelect = (date: string) => {
+    switch (calendarType) {
+      case 'departure':
+        setDepartureDate(date);
+        break;
+      case 'return':
+        setReturnDate(date);
+        break;
+      case 'checkin':
+        setHotelCheckIn(date);
+        break;
+      case 'checkout':
+        setHotelCheckOut(date);
+        break;
+      case 'car-pickup':
+        setCarPickupDate(date);
+        break;
+      case 'car-dropoff':
+        setCarDropoffDate(date);
+        break;
+    }
+    setShowCalendar(false);
+  };
+
   const getTabBg = () => {
     return 'bg-orange-400';
   };
@@ -235,7 +346,17 @@ export default function SearchTabsForm() {
             {/* Tab Content */}
             <form
               className={`rounded-b-lg shadow px-6 sm:px-16 py-4 flex flex-col sm:flex-row sm:justify-center sm:items-center gap-6 max-w-6xl w-full ${getTabBg()} bg-opacity-90`}
-              onSubmit={tab === 'flights' ? handleFlightsSearch : tab === 'hotels' ? handleHotelsSearch : undefined}
+              onSubmit={
+                tab === 'flights'
+                  ? handleFlightsSearch
+                  : tab === 'hotels'
+                    ? handleHotelsSearch
+                    : tab === 'carhire'
+                      ? handleCarHireSearch
+                      : tab === 'holidays'
+                        ? handleHolidaysSearch
+                        : undefined
+              }
             >
               {tab === 'flights' && (
                 <>
@@ -258,19 +379,25 @@ export default function SearchTabsForm() {
                     required
                   />
                   <input
-                    type='date'
+                    ref={departureInputRef}
+                    type='text'
                     name='depart'
-                    className='border rounded px-3 py-2 flex-1 min-w-[150px] bg-white text-black'
-                    value={departureDate}
-                    onChange={e => setDepartureDate(e.target.value)}
+                    placeholder='Departure Date'
+                    className='border rounded px-3 py-2 flex-1 min-w-[150px] bg-white text-black cursor-pointer'
+                    value={departureDate ? new Date(departureDate).toLocaleDateString() : ''}
+                    onClick={() => openCalendar('departure', 'flight')}
+                    readOnly
                     required
                   />
                   <input
-                    type='date'
+                    ref={returnInputRef}
+                    type='text'
                     name='return'
-                    className='border rounded px-3 py-2 flex-1 min-w-[150px] bg-white text-black'
-                    value={returnDate}
-                    onChange={e => setReturnDate(e.target.value)}
+                    placeholder='Return Date'
+                    className='border rounded px-3 py-2 flex-1 min-w-[150px] bg-white text-black cursor-pointer'
+                    value={returnDate ? new Date(returnDate).toLocaleDateString() : ''}
+                    onClick={() => openCalendar('return', 'flight')}
+                    readOnly
                   />
                   <input
                     type='number'
@@ -292,11 +419,12 @@ export default function SearchTabsForm() {
                   </select>
                   <button
                     type='submit'
-                    className='flex-1 min-w-[140px] bg-orange-800 hover:bg-orange-900 text-white font-semibold px-2 py-2 rounded transition cursor-pointer'
+                    className='min-w-[50px] bg-orange-800 hover:bg-orange-900 text-white font-semibold p-3 rounded transition cursor-pointer flex items-center justify-center'
                     style={{ whiteSpace: 'nowrap' }}
                     disabled={loading}
+                    title={loading ? 'Searching...' : 'Search Flights'}
                   >
-                    {loading ? 'Searching...' : 'Search Flights'}
+                    <Search size={20} />
                   </button>
                 </>
               )}
@@ -312,19 +440,25 @@ export default function SearchTabsForm() {
                     required
                   />
                   <input
-                    type='date'
+                    ref={checkinInputRef}
+                    type='text'
                     name='checkin'
-                    className='border rounded px-3 py-2 flex-1 min-w-[120px] bg-white text-black'
-                    value={hotelCheckIn}
-                    onChange={e => setHotelCheckIn(e.target.value)}
+                    placeholder='Check-in Date'
+                    className='border rounded px-3 py-2 flex-1 min-w-[120px] bg-white text-black cursor-pointer'
+                    value={hotelCheckIn ? new Date(hotelCheckIn).toLocaleDateString() : ''}
+                    onClick={() => openCalendar('checkin', 'hotel')}
+                    readOnly
                     required
                   />
                   <input
-                    type='date'
+                    ref={checkoutInputRef}
+                    type='text'
                     name='checkout'
-                    className='border rounded px-3 py-2 flex-1 min-w-[120px] bg-white text-black'
-                    value={hotelCheckOut}
-                    onChange={e => setHotelCheckOut(e.target.value)}
+                    placeholder='Check-out Date'
+                    className='border rounded px-3 py-2 flex-1 min-w-[120px] bg-white text-black cursor-pointer'
+                    value={hotelCheckOut ? new Date(hotelCheckOut).toLocaleDateString() : ''}
+                    onClick={() => openCalendar('checkout', 'hotel')}
+                    readOnly
                     required
                   />
                   <input
@@ -339,10 +473,11 @@ export default function SearchTabsForm() {
                   />
                   <button
                     type='submit'
-                    className='bg-orange-800 hover:bg-orange-900 text-white font-semibold px-6 py-2 rounded transition min-w-[120px] cursor-pointer'
+                    className='bg-orange-800 hover:bg-orange-900 text-white font-semibold p-3 rounded transition min-w-[50px] cursor-pointer flex items-center justify-center'
                     disabled={hotelLoading}
+                    title={hotelLoading ? 'Searching...' : 'Search Hotels'}
                   >
-                    {hotelLoading ? 'Searching...' : 'Search Hotels'}
+                    <Search size={20} />
                   </button>
                 </>
               )}
@@ -381,9 +516,10 @@ export default function SearchTabsForm() {
                   />
                   <button
                     type='submit'
-                    className='bg-orange-800 hover:bg-orange-900 text-white font-semibold px-6 py-2 rounded transition min-w-[120px] cursor-pointer'
+                    className='bg-orange-800 hover:bg-orange-900 text-white font-semibold p-3 rounded transition min-w-[50px] cursor-pointer flex items-center justify-center'
+                    title='Search Holidays'
                   >
-                    Search Holidays
+                    <Search size={20} />
                   </button>
                 </>
               )}
@@ -394,52 +530,86 @@ export default function SearchTabsForm() {
                     name='pickup'
                     placeholder='Pick-up Location'
                     className='border rounded px-3 py-2 flex-1 min-w-[140px] bg-white text-black'
+                    value={carPickupLocation}
+                    onChange={e => setCarPickupLocation(e.target.value)}
                     required
                   />
                   <input
-                    type='date'
+                    ref={carPickupInputRef}
+                    type='text'
                     name='pickupDate'
-                    className='border rounded px-3 py-2 flex-1 min-w-[140px] bg-white text-black'
+                    placeholder='Pick-up Date'
+                    className='border rounded px-3 py-2 flex-1 min-w-[140px] bg-white text-black cursor-pointer'
+                    value={carPickupDate ? new Date(carPickupDate).toLocaleDateString() : ''}
+                    onClick={() => openCalendar('car-pickup', 'car')}
+                    readOnly
                     required
                   />
                   <input
                     type='time'
                     name='pickupTime'
                     className='border rounded px-3 py-2 flex-1 min-w-[120px] bg-white text-black'
+                    value={carPickupTime}
+                    onChange={e => setCarPickupTime(e.target.value)}
                     required
                   />
                   <input
-                    type='date'
+                    ref={carDropoffInputRef}
+                    type='text'
                     name='dropoffDate'
-                    className='border rounded px-3 py-2 flex-1 min-w-[140px] bg-white text-black'
+                    placeholder='Drop-off Date'
+                    className='border rounded px-3 py-2 flex-1 min-w-[140px] bg-white text-black cursor-pointer'
+                    value={carDropoffDate ? new Date(carDropoffDate).toLocaleDateString() : ''}
+                    onClick={() => openCalendar('car-dropoff', 'car')}
+                    readOnly
                     required
                   />
                   <input
                     type='time'
                     name='dropoffTime'
                     className='border rounded px-3 py-2 flex-1 min-w-[120px] bg-white text-black'
-                    required
-                  />
-                  <input
-                    type='number'
-                    name='drivers'
-                    min='1'
-                    defaultValue='1'
-                    className='border rounded px-3 py-2 flex-1 min-w-[100px] bg-white text-black'
-                    placeholder='Drivers'
+                    value={carDropoffTime}
+                    onChange={e => setCarDropoffTime(e.target.value)}
                     required
                   />
                   <button
                     type='submit'
-                    className='bg-orange-800 hover:bg-orange-900 text-white font-semibold px-6 py-2 rounded transition min-w-[120px] cursor-pointer'
+                    className='bg-orange-800 hover:bg-orange-900 text-white font-semibold p-3 rounded transition min-w-[50px] cursor-pointer flex items-center justify-center'
+                    title='Search Cars'
                   >
-                    Search
+                    <Search size={20} />
                   </button>
                 </>
               )}
             </form>
           </div>
         </div>
+
+        {/* Price Calendar Modal */}
+        {showCalendar && (
+          <PriceCalendar
+            selectedDate={
+              calendarType === 'departure' ? departureDate :
+                calendarType === 'return' ? returnDate :
+                  calendarType === 'checkin' ? hotelCheckIn :
+                    calendarType === 'checkout' ? hotelCheckOut :
+                      calendarType === 'car-pickup' ? carPickupDate :
+                        calendarType === 'car-dropoff' ? carDropoffDate : ''
+            }
+            onDateSelect={handleDateSelect}
+            onClose={() => setShowCalendar(false)}
+            searchType={calendarSearchType}
+            position={calendarPosition}
+            inputRef={
+              calendarType === 'departure' ? departureInputRef :
+                calendarType === 'return' ? returnInputRef :
+                  calendarType === 'checkin' ? checkinInputRef :
+                    calendarType === 'checkout' ? checkoutInputRef :
+                      calendarType === 'car-pickup' ? carPickupInputRef :
+                        calendarType === 'car-dropoff' ? carDropoffInputRef : undefined
+            }
+          />
+        )}
       </div>
     </>
   );

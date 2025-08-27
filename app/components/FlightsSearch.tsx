@@ -1,5 +1,7 @@
 "use client";
 
+import { Search } from 'lucide-react';
+
 interface FlightSegment {
   departure: {
     iataCode: string;
@@ -301,8 +303,8 @@ export default function FlightsSearch({ selectedDate, setOrigin, setDestination,
             <label className="block mb-1 font-medium">Adults</label>
             <input type="number" className="w-24 border rounded px-3 py-2" min={1} max={9} value={adults} onChange={e => setAdults(Number(e.target.value))} required />
           </div>
-          <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded font-semibold" disabled={loading}>
-            {loading ? "Searching..." : "Search Flights"}
+          <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded font-semibold flex items-center justify-center min-w-[50px]" disabled={loading} title={loading ? "Searching..." : "Search Flights"}>
+            <Search size={20} />
           </button>
         </form>
         {error && <div className="mt-4 text-red-600">{error}</div>}

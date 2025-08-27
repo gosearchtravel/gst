@@ -4,8 +4,10 @@ import { useState, useEffect, useRef, Suspense } from "react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { Search } from 'lucide-react';
 import Header from "../components/header";
 import Footer from "../components/footer";
+import PriceCalendar from "../../components/ui/price-calendar";
 import "leaflet/dist/leaflet.css";
 
 // Dynamic import for MapWithMarkers to avoid SSR issues with Leaflet
@@ -211,6 +213,42 @@ function HotelsPageContent() {
   const [currentImageIndex, setCurrentImageIndex] = useState<{ [key: string]: number }>({});
   const mapRef = useRef<HTMLDivElement>(null);
 
+  // Calendar state
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [calendarType, setCalendarType] = useState<'checkin' | 'checkout'>('checkin');
+  const [calendarPosition, setCalendarPosition] = useState<{ top: number; left: number; width: number } | undefined>();
+
+  // Refs for input fields
+  const checkinInputRef = useRef<HTMLInputElement>(null);
+  const checkoutInputRef = useRef<HTMLInputElement>(null);
+
+  // Calendar handlers
+  const openCalendar = (type: 'checkin' | 'checkout') => {
+    setCalendarType(type);
+
+    // Calculate position based on input field
+    const inputRef = type === 'checkin' ? checkinInputRef : checkoutInputRef;
+    if (inputRef.current) {
+      const rect = inputRef.current.getBoundingClientRect();
+      setCalendarPosition({
+        top: rect.bottom + window.scrollY + 4,
+        left: rect.left + window.scrollX,
+        width: rect.width
+      });
+    }
+
+    setShowCalendar(true);
+  };
+
+  const handleDateSelect = (date: string) => {
+    if (calendarType === 'checkin') {
+      setCheckIn(date);
+    } else {
+      setCheckOut(date);
+    }
+    setShowCalendar(false);
+  };
+
   async function handleSearch(e?: React.FormEvent<HTMLFormElement>) {
     if (e) e.preventDefault();
     setLoading(true);
@@ -309,16 +347,22 @@ function HotelsPageContent() {
               onChange={e => setSearch(e.target.value)}
             />
             <input
-              type="date"
-              className="border rounded px-4 py-2"
-              value={checkIn}
-              onChange={e => setCheckIn(e.target.value)}
+              ref={checkinInputRef}
+              type="text"
+              placeholder="Check-in Date"
+              className="border rounded px-4 py-2 cursor-pointer"
+              value={checkIn ? new Date(checkIn).toLocaleDateString() : ''}
+              onClick={() => openCalendar('checkin')}
+              readOnly
             />
             <input
-              type="date"
-              className="border rounded px-4 py-2"
-              value={checkOut}
-              onChange={e => setCheckOut(e.target.value)}
+              ref={checkoutInputRef}
+              type="text"
+              placeholder="Check-out Date"
+              className="border rounded px-4 py-2 cursor-pointer"
+              value={checkOut ? new Date(checkOut).toLocaleDateString() : ''}
+              onClick={() => openCalendar('checkout')}
+              readOnly
             />
             <input
               type="number"
@@ -327,7 +371,9 @@ function HotelsPageContent() {
               value={guests}
               onChange={e => setGuests(Number(e.target.value))}
             />
-            <button type="submit" className="bg-orange-600 text-white px-6 py-2 rounded font-bold">Search</button>
+            <button type="submit" className="bg-orange-600 hover:bg-orange-700 text-white p-3 rounded font-bold flex items-center justify-center min-w-[50px]" title="Search">
+              <Search size={20} />
+            </button>
           </form>
         </div>
         {/* Main content: filters, hotel list, map */}
@@ -562,6 +608,18 @@ function HotelsPageContent() {
         </div>
       </div>
       <Footer />
+
+      {/* Price Calendar Modal */}
+      {showCalendar && (
+        <PriceCalendar
+          selectedDate={calendarType === 'checkin' ? checkIn : checkOut}
+          onDateSelect={handleDateSelect}
+          onClose={() => setShowCalendar(false)}
+          searchType="hotel"
+          position={calendarPosition}
+          inputRef={calendarType === 'checkin' ? checkinInputRef : checkoutInputRef}
+        />
+      )}
     </>
   );
 }
