@@ -3,9 +3,7 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-	experimental: {
-		serverComponentsExternalPackages: ['@prisma/client'],
-	},
+	serverExternalPackages: ['@prisma/client'],
 	webpack: (config, { isServer }) => {
 		if (isServer) {
 			config.externals.push('@prisma/client');
