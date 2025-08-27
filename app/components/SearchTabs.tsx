@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 
 type TabType = 'flights' | 'hotels' | 'holidays' | 'carhire';
@@ -196,11 +194,7 @@ export default function SearchTabsForm() {
   }
 
   const getTabBg = () => {
-    if (tab === 'flights') return 'bg-orange-400';
-    if (tab === 'hotels') return 'bg-orange-300';
-    if (tab === 'holidays') return 'bg-orange-200';
-    if (tab === 'carhire') return 'bg-orange-100';
-    return 'bg-white';
+    return 'bg-orange-400';
   };
 
   function handleFlightsSearch(e: React.FormEvent) {
@@ -220,7 +214,7 @@ export default function SearchTabsForm() {
     <>
       <div className='flex flex-col gap-[32px] row-start-2 items-center sm:items-start w-full'>
         <div className="w-full flex justify-center">
-          <div className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bottom-0 z-30 max-w-6xl w-full" style={{ marginTop: '-4rem' }}>
+          <div className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bottom-15 z-30 max-w-6xl w-full">
             {/* Tabs */}
             <div className="flex rounded-t-lg shadow px-2 sm:px-6">
               {['flights', 'hotels', 'holidays', 'carhire'].map((t) => (
@@ -229,13 +223,7 @@ export default function SearchTabsForm() {
                   onClick={() => setTab(t as TabType)}
                   className={`px-4 py-2 mr-1 font-semibold rounded-t-lg transition cursor-pointer
                             ${tab === t
-                      ? t === 'flights'
-                        ? 'bg-orange-400 text-white'
-                        : t === 'hotels'
-                          ? 'bg-orange-300 text-white'
-                          : t === 'holidays'
-                            ? 'bg-orange-200 text-white'
-                            : 'bg-orange-100 text-white'
+                      ? 'bg-orange-400 text-white'
                       : 'bg-white text-orange-400 hover:bg-orange-100'
                     }`}
                   style={{ textTransform: 'capitalize' }}
@@ -246,10 +234,7 @@ export default function SearchTabsForm() {
             </div>
             {/* Tab Content */}
             <form
-              className={`rounded-b-lg shadow px-6 sm:px-16 py-4 flex ${tab === 'flights'
-                ? 'flex-col sm:flex-row sm:justify-start sm:items-center gap-4'
-                : 'flex-col sm:flex-row sm:justify-center sm:items-center gap-6'
-                } max-w-6xl w-full ${getTabBg()} bg-opacity-90`}
+              className={`rounded-b-lg shadow px-6 sm:px-16 py-4 flex flex-col sm:flex-row sm:justify-center sm:items-center gap-6 max-w-6xl w-full ${getTabBg()} bg-opacity-90`}
               onSubmit={tab === 'flights' ? handleFlightsSearch : tab === 'hotels' ? handleHotelsSearch : undefined}
             >
               {tab === 'flights' && (
@@ -453,31 +438,6 @@ export default function SearchTabsForm() {
                 </>
               )}
             </form>
-            {/* Show flight results below the form */}
-            {tab === 'flights' && (
-              <div className="mt-8">
-                {error && <div className="text-red-600 mb-4">{error}</div>}
-                {results && (
-                  <div>
-                    <h3 className="text-lg font-bold mb-2">Results</h3>
-                    {results.data && results.data.length > 0 ? (
-                      <ul className="space-y-4">
-                        {results.data.map((offer, idx) => (
-                          <li key={idx} className="border rounded p-4">
-                            <div className="font-semibold">Price: {offer.price.total} {offer.price.currency}</div>
-                            <div>Itinerary: {offer.itineraries.map((it) => it.segments.map((seg) => `${seg.departure.iataCode} → ${seg.arrival.iataCode} (${seg.departure.at.split('T')[0]})`).join(', ')).join(' | ')}</div>
-                            <div>Airlines: {offer.validatingAirlineCodes.join(', ')}</div>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <div>No flights found.</div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-            {/* Hotel results are now shown on /hotels page after redirect */}
           </div>
         </div>
       </div>
