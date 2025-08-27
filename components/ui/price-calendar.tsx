@@ -97,7 +97,6 @@ const PriceCalendar: React.FC<PriceCalendarProps> = ({
   // Calculate position based on input element
   useEffect(() => {
     if (inputRef?.current && !position) {
-      const rect = inputRef.current.getBoundingClientRect();
       // The position will be handled by the parent component
     }
   }, [inputRef, position]);

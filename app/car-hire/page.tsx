@@ -314,7 +314,6 @@ const generateMockCarRentals = (location: string, pickupDate?: string, dropoffDa
   const [dropoffDate, setDropoffDate] = useState(searchParams.get("dropoffDate") || "");
   const [dropoffTime, setDropoffTime] = useState(searchParams.get("dropoffTime") || "");
   const [highlightedCarId, setHighlightedCarId] = useState<string | null>(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState<{ [key: string]: number }>({});
 
   // Calendar state
   const [showCalendar, setShowCalendar] = useState(false);

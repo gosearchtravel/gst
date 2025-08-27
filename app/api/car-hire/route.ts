@@ -3,45 +3,57 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 interface CarRentalLocation {
-	iataCode: string;
-	name: string;
-	geoCode: {
-		latitude: number;
-		longitude: number;
+	iataCode?: string;
+	name?: string;
+	geoCode?: {
+		latitude?: number;
+		longitude?: number;
 	};
-	address: {
-		cityName: string;
-		countryName: string;
+	address?: {
+		cityName?: string;
+		countryName?: string;
 	};
 }
 
 interface CarRentalOffer {
 	id: string;
-	name: string;
-	description: string;
-	category: string;
-	transmission: string;
-	fuel: string;
-	airConditioning: boolean;
-	seats: number;
-	doors: number;
-	baggage: {
+	name?: string;
+	description?: string;
+	category?: string;
+	transmission?: string;
+	fuel?: string;
+	airConditioning?: boolean;
+	seats?: number;
+	doors?: number;
+	vehicle?: {
+		description?: string;
+		category?: string;
+		transmission?: string;
+		fuel?: string;
+		doors?: number;
+		seats?: number;
+		airConditioning?: boolean;
+		baggage?: {
+			quantity?: number;
+		};
+	};
+	baggage?: {
 		quantity: number;
 	};
-	price: {
-		currency: string;
-		base: string;
-		total: string;
+	price?: {
+		currency?: string;
+		base?: string;
+		total?: string;
 	};
-	vendor: {
-		code: string;
-		name: string;
+	vendor?: {
+		code?: string;
+		name?: string;
 	};
-	paymentPolicy: {
-		creditCardsAccepted: string[];
+	paymentPolicy?: {
+		creditCardsAccepted?: string[];
 	};
-	pickupLocation: CarRentalLocation;
-	dropoffLocation: CarRentalLocation;
+	pickupLocation?: CarRentalLocation;
+	dropoffLocation?: CarRentalLocation;
 }
 
 export async function POST(request: NextRequest) {
@@ -160,7 +172,7 @@ export async function POST(request: NextRequest) {
 
 		// Transform Amadeus data to our format
 		const transformedData =
-			carRentalData.data?.map((offer: any) => {
+			carRentalData.data?.map((offer: CarRentalOffer) => {
 				const vehicle = offer.vehicle || {};
 				const price = offer.price || {};
 				const vendor = offer.vendor || {};
