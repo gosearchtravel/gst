@@ -176,12 +176,12 @@ const PriceCalendar: React.FC<PriceCalendarProps> = ({
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 z-40" onClick={onClose}></div>
+      <div className="fixed inset-0 z-[9998]" onClick={onClose}></div>
 
       {/* Dropdown Calendar */}
       <div
         ref={calendarRef}
-        className="absolute bg-white rounded-lg shadow-2xl border border-gray-200 z-50"
+        className="absolute bg-white rounded-lg shadow-2xl border border-gray-200 z-[9999]"
         style={{
           top: position?.top || 0,
           left: position?.left || 0,

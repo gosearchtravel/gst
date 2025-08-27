@@ -22,7 +22,7 @@ export default function Header({ homePage = false }: { homePage?: boolean } = {}
   const headerBg = homePage ? 'bg-transparent' : (scrolled ? 'bg-black/70' : 'bg-black');
 
   return (
-    <header className="sticky top-0 z-50">
+    <header className="sticky top-0 z-[9999]">
       <div className={`w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 absolute top-0 z-100 ${headerBg}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
