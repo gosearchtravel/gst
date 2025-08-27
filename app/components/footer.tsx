@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Plane, Twitter, Facebook, Instagram } from 'lucide-react';
+import { Plane } from 'lucide-react';
 
 const footerLinks = {
   explore: [

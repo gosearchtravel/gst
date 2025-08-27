@@ -1,8 +1,8 @@
 /** @format */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
 	// Placeholder endpoint for airports
 	return NextResponse.json({ message: 'Airports endpoint - not implemented yet' });
 }

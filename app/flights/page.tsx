@@ -6,21 +6,6 @@ import Header from "../components/header";
 import Footer from "../components/footer";
 import FlightsSearch from "../components/FlightsSearch";
 
-// Helper to get today and next 6 days
-function getNextDays(numDays: number) {
-  const days = [];
-  const today = new Date();
-  for (let i = 0; i < numDays; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() + i);
-    days.push({
-      date: d.toISOString().slice(0, 10),
-      price: 400 + Math.floor(Math.random() * 150), // Example price logic
-    });
-  }
-  return days;
-}
-
 export default function FlightsPage() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10));
   const [datePrices, setDatePrices] = useState<Array<{ date: string; price: number }>>([]);
