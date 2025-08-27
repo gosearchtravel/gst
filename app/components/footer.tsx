@@ -8,9 +8,9 @@ const footerLinks = {
     { title: 'Airports', href: '#' },
     { title: 'Countries', href: '#' },
     { title: 'Airlines', href: '#' },
-    { title: 'Flights', href: 'FlightSearch' },
-    { title: 'Hotels', href: 'HotelSearch' },
-    { title: 'Car hire', href: 'CarSearch' },
+    { title: 'Flights', href: 'flights' },
+    { title: 'Hotels', href: 'hotels' },
+    { title: 'Car hire', href: 'carhire' },
   ],
   company: [
     { title: 'About us', href: '#' },
