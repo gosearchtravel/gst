@@ -5,16 +5,32 @@ import BlogMenuClient from './BlogMenuClient';
 
 // Force this page to be dynamic (not pre-rendered)
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+// Generate static params for known cities
+export async function generateStaticParams() {
+  return [
+    { city: 'paris' },
+    { city: 'london' },
+    { city: 'tokyo' },
+  ];
+}
 
 function normalizeCityParam(param: string) {
   return param.toLowerCase().replace(/[\s-]+/g, '');
 }
 
 export default async function BlogCityPage({ params }: { params: Promise<{ city: string }> }) {
-  const { city } = await params;
-  const cityKey = normalizeCityParam(city);
-
   try {
+    const resolvedParams = await params;
+    const city = resolvedParams?.city;
+
+    if (!city) {
+      return notFound();
+    }
+
+    const cityKey = normalizeCityParam(city);
+
     // Use mock data for now to avoid build issues
     // In production, you would fetch from your actual database
     const mockPosts = [
@@ -72,7 +88,7 @@ export default async function BlogCityPage({ params }: { params: Promise<{ city:
       </div>
     );
   } catch (error) {
-    console.error('Error fetching blog data:', error);
+    console.error('Error in BlogCityPage:', error);
     return notFound();
   }
 }
