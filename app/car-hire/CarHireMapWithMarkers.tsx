@@ -1,7 +1,7 @@
 "use client";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L, { LatLngExpression, LatLngBounds } from "leaflet";
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useRef } from "react";
 
 import type { FC } from "react";
 
@@ -37,6 +37,68 @@ const MapViewUpdater: FC<{ center: LatLngExpression; zoom: number; bounds: LatLn
       map.setView(center, zoom);
     }
   }, [map, center, zoom, bounds]);
+
+  return null;
+};
+
+// Component to handle popup opening for highlighted markers
+const PopupController: FC<{ highlightedMarkerId: string | null; markers: CarMarker[] }> = ({ highlightedMarkerId, markers }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (highlightedMarkerId) {
+      // Find the highlighted marker
+      const highlightedMarker = markers.find(m => m.id === highlightedMarkerId);
+      if (highlightedMarker) {
+        // Close any existing popups
+        map.closePopup();
+
+        // Open popup for the highlighted marker after a small delay
+        setTimeout(() => {
+          const popup = L.popup({
+            maxWidth: 300,
+            minWidth: 280,
+          })
+            .setLatLng([highlightedMarker.lat, highlightedMarker.lng])
+            .setContent(`
+              <div class="p-2">
+                <div class="flex gap-3">
+                  <img
+                    src="${highlightedMarker.image}"
+                    alt="${highlightedMarker.name}"
+                    class="w-20 h-16 object-cover rounded"
+                    onerror="this.src='/popdest/abudhabi.jpg'"
+                  />
+                  <div class="flex-1">
+                    <div class="font-bold text-gray-900 text-sm mb-1">
+                      ${highlightedMarker.name}
+                    </div>
+                    <div class="text-xs text-gray-600 mb-1">
+                      ${highlightedMarker.type} • Rating: ${highlightedMarker.rating}⭐
+                    </div>
+                    <div class="text-xs text-gray-600 mb-2">
+                      📍 ${highlightedMarker.address}
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <div class="text-sm font-bold text-orange-600">
+                        ${highlightedMarker.price}
+                      </div>
+                      <button class="bg-orange-600 text-white px-3 py-1 rounded text-xs font-bold hover:bg-orange-700">
+                        Book Now
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `)
+            .openOn(map);
+        }, 100);
+      }
+    } else {
+      // Close popup when no marker is highlighted
+      map.closePopup();
+    }
+  }, [map, highlightedMarkerId, markers]);
 
   return null;
 };
@@ -131,6 +193,9 @@ const MapWithMarkers: FC<MapWithMarkersProps> = ({ markers, center: propCenter, 
       {/* Component to update map view when markers change */}
       <MapViewUpdater center={center} zoom={zoom} bounds={bounds} />
 
+      {/* Component to handle popup opening for highlighted markers */}
+      <PopupController highlightedMarkerId={highlightedMarkerId || null} markers={markers} />
+
       {/* English OpenStreetMap tiles */}
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -157,6 +222,9 @@ const MapWithMarkers: FC<MapWithMarkersProps> = ({ markers, center: propCenter, 
                     src={marker.image}
                     alt={marker.name}
                     className="w-20 h-16 object-cover rounded"
+                    onError={(e) => {
+                      e.currentTarget.src = "/popdest/abudhabi.jpg";
+                    }}
                   />
 
                   {/* Car Details */}
