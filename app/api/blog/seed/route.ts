@@ -93,34 +93,27 @@ export async function POST() {
 		];
 
 		// Upsert blog posts in database
-		const upsertedPosts = [];
+		let createdCount = 0;
 		for (const post of blogPosts) {
 			try {
-				const upserted = await prisma.blogPost.upsert({
-					where: { city: post.city },
-					update: {
-						image: post.image,
-						excerpt: post.excerpt,
-						content: post.content,
-					},
-					create: {
+				await prisma.blogPost.create({
+					data: {
 						city: post.city,
 						image: post.image,
 						excerpt: post.excerpt,
 						content: post.content,
 					},
 				});
-				upsertedPosts.push(upserted);
-				console.log(`✅ Upserted blog post for ${post.city}`);
+				createdCount++;
+				console.log(`✅ Created blog post for ${post.city}`);
 			} catch (error) {
-				console.error(`❌ Failed to upsert blog post for ${post.city}:`, error);
+				console.error(`❌ Failed to create blog post for ${post.city}:`, error);
 			}
 		}
 
 		return NextResponse.json({
 			success: true,
-			message: `Successfully upserted ${upsertedPosts.length} blog posts`,
-			posts: upsertedPosts,
+			message: `Successfully created ${createdCount} blog posts`,
 		});
 	} catch (error) {
 		console.error('Error seeding database:', error);
