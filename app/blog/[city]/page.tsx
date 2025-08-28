@@ -29,7 +29,7 @@ export default async function BlogCityPage({ params }: { params: Promise<{ city:
   let blog: BlogPost | null = null;
 
   try {
-    const response = await fetch(`${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}/api/blog`, {
+    const response = await fetch('/api/blog', {
       cache: 'no-store'
     });
 
