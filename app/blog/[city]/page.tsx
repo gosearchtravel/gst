@@ -2,6 +2,7 @@
 
 import { notFound } from 'next/navigation';
 import BlogMenuClient from './BlogMenuClient';
+import { BlogPost } from '../../../types/blog';
 
 // Make this a dynamic route to avoid build issues
 export const dynamic = 'force-dynamic';
@@ -24,8 +25,8 @@ export default async function BlogCityPage({ params }: { params: Promise<{ city:
   // Since this is a dynamic route, we'll fetch data at runtime only
   // This prevents any build-time database access issues
 
-  let allPosts = [];
-  let blog = null;
+  let allPosts: BlogPost[] = [];
+  let blog: BlogPost | null = null;
 
   try {
     const response = await fetch(`${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}/api/blog`, {
@@ -34,7 +35,7 @@ export default async function BlogCityPage({ params }: { params: Promise<{ city:
 
     if (response.ok) {
       allPosts = await response.json();
-      blog = allPosts.find((p: any) => normalizeCityParam(p.city) === cityKey);
+      blog = allPosts.find((p: BlogPost) => normalizeCityParam(p.city) === cityKey) || null;
     }
   } catch (error) {
     console.error('Error fetching blog data:', error);

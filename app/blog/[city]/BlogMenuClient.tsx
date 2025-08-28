@@ -1,10 +1,6 @@
 "use client";
 import MobileBlogMenu from "./MobileBlogMenu";
-
-interface BlogPost {
-  id: number;
-  city: string;
-}
+import { BlogPost } from "../../../types/blog";
 
 export default function BlogMenuClient({ allPosts }: { allPosts: BlogPost[] }) {
   return <MobileBlogMenu allPosts={allPosts} />;

@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createPrismaClient } from '../../../lib/prisma';
+import { BlogPostCreateInput } from '../../../types/blog';
 
 // Force this route to be dynamic (not pre-rendered)
 export const dynamic = 'force-dynamic';
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
 	let prisma;
 	try {
 		prisma = await createPrismaClient();
-		const data = await req.json();
+		const data: BlogPostCreateInput = await req.json();
 		// Only allow fields defined in the model
 		const { city, image, excerpt, content } = data;
 		if (!city || !image || !excerpt || !content) {

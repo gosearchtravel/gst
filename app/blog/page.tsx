@@ -5,17 +5,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-
-interface BlogPost {
-  id: number;
-  title: string;
-  content: string;
-  city: string;
-  imagePath: string;
-  image: string;
-  excerpt: string;
-  createdAt: string;
-}
+import { BlogPost } from '../../types/blog';
 
 export default function BlogPage() {
   // Utility to convert city names to one-word, lowercase slugs for URLs
