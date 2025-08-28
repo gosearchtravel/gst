@@ -210,7 +210,7 @@ export default function FlightsResults({ selectedDate, origin, destination, retu
                       />
                       <div className="flex-1">
                         <div className="font-bold text-sm">Fly {airlineCode} with up to 50% off</div>
-                        <div className="text-xs opacity-90">Don't miss the dream sale, fly with {airlineCode} and save up to 50%.</div>
+                        <div className="text-xs opacity-90">Don&apos;t miss the dream sale, fly with {airlineCode} and save up to 50%.</div>
                       </div>
                     </div>
 
