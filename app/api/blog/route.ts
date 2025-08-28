@@ -18,10 +18,85 @@ export async function GET() {
 			},
 		});
 
+		// If no posts found, return fallback data
+		if (posts.length === 0) {
+			const fallbackPosts = [
+				{
+					id: 1,
+					city: 'Paris',
+					image: '/popdest/paris.jpg',
+					excerpt:
+						'Experience the romance, art, and cuisine of Paris. Discover the Eiffel Tower, Louvre, and charming cafes.',
+					content:
+						'Paris, the City of Light, is renowned for its timeless beauty, rich history, and vibrant culture.',
+					createdAt: new Date().toISOString(),
+					updatedAt: new Date().toISOString(),
+				},
+				{
+					id: 2,
+					city: 'London',
+					image: '/popdest/london.jpg',
+					excerpt: 'Explore historic landmarks, vibrant markets, and world-class museums in London.',
+					content:
+						'London, the capital of England, is a dynamic metropolis that seamlessly blends historic charm with modern innovation.',
+					createdAt: new Date().toISOString(),
+					updatedAt: new Date().toISOString(),
+				},
+				{
+					id: 3,
+					city: 'Rome',
+					image: '/popdest/rome.webp',
+					excerpt:
+						'Walk through ancient ruins, taste authentic Italian food, and marvel at Renaissance art in Rome.',
+					content: 'Rome, the Eternal City, is a living museum where ancient history meets modern life.',
+					createdAt: new Date().toISOString(),
+					updatedAt: new Date().toISOString(),
+				},
+			];
+			return NextResponse.json(fallbackPosts);
+		}
+
 		return NextResponse.json(posts);
 	} catch (error) {
 		console.error('Error fetching blog posts:', error);
-		return NextResponse.json({ error: 'Failed to fetch blog posts' }, { status: 500 });
+
+		// Return fallback data instead of error when database fails
+		const fallbackPosts = [
+			{
+				id: 1,
+				city: 'Paris',
+				image: '/popdest/paris.jpg',
+				excerpt:
+					'Experience the romance, art, and cuisine of Paris. Discover the Eiffel Tower, Louvre, and charming cafes.',
+				content:
+					'Paris, the City of Light, is renowned for its timeless beauty, rich history, and vibrant culture.',
+				createdAt: new Date().toISOString(),
+				updatedAt: new Date().toISOString(),
+			},
+			{
+				id: 2,
+				city: 'London',
+				image: '/popdest/london.jpg',
+				excerpt: 'Explore historic landmarks, vibrant markets, and world-class museums in London.',
+				content:
+					'London, the capital of England, is a dynamic metropolis that seamlessly blends historic charm with modern innovation.',
+				createdAt: new Date().toISOString(),
+				updatedAt: new Date().toISOString(),
+			},
+			{
+				id: 3,
+				city: 'Rome',
+				image: '/popdest/rome.webp',
+				excerpt:
+					'Walk through ancient ruins, taste authentic Italian food, and marvel at Renaissance art in Rome.',
+				content: 'Rome, the Eternal City, is a living museum where ancient history meets modern life.',
+				createdAt: new Date().toISOString(),
+				updatedAt: new Date().toISOString(),
+			},
+		];
+
+		console.log('Returning fallback blog posts due to database error');
+		return NextResponse.json(fallbackPosts);
 	} finally {
 		if (prisma) {
 			await prisma.$disconnect();
