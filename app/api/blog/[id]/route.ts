@@ -1,16 +1,16 @@
 /** @format */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { createPrismaClient } from '../../../../lib/prisma';
 
 // Force this route to be dynamic (not pre-rendered)
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+	let prisma;
 	try {
+		prisma = await createPrismaClient();
 		const { id } = await params;
 
 		// Validate the ID parameter
@@ -31,11 +31,17 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 	} catch (error) {
 		console.error('Error fetching blog post:', error);
 		return NextResponse.json({ error: 'Failed to fetch blog post' }, { status: 500 });
+	} finally {
+		if (prisma) {
+			await prisma.$disconnect();
+		}
 	}
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+	let prisma;
 	try {
+		prisma = await createPrismaClient();
 		const { id } = await params;
 		const data = await req.json();
 
@@ -64,11 +70,17 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 	} catch (error) {
 		console.error('Error updating blog post:', error);
 		return NextResponse.json({ error: 'Failed to update blog post' }, { status: 500 });
+	} finally {
+		if (prisma) {
+			await prisma.$disconnect();
+		}
 	}
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+	let prisma;
 	try {
+		prisma = await createPrismaClient();
 		const { id } = await params;
 
 		// Validate the ID parameter
@@ -85,5 +97,9 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 	} catch (error) {
 		console.error('Error deleting blog post:', error);
 		return NextResponse.json({ error: 'Failed to delete blog post' }, { status: 500 });
+	} finally {
+		if (prisma) {
+			await prisma.$disconnect();
+		}
 	}
 }

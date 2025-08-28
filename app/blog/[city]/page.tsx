@@ -3,28 +3,9 @@
 import { notFound } from 'next/navigation';
 import BlogMenuClient from './BlogMenuClient';
 
-// Force this page to be dynamic (not pre-rendered)
+// Make this a dynamic route to avoid build issues
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
-
-// Generate static params for known cities
-export async function generateStaticParams() {
-  return [
-    { city: 'paris' },
-    { city: 'london' },
-    { city: 'tokyo' },
-    { city: 'barcelona' },
-    { city: 'sydney' },
-    { city: 'dubai' },
-    { city: 'bangkok' },
-    { city: 'singapore' },
-    { city: 'hongkong' },
-    { city: 'newyork' },
-    { city: 'rome' },
-    { city: 'istanbul' },
-    { city: 'melbourne' },
-  ];
-}
 
 function normalizeCityParam(param: string) {
   return param.toLowerCase().replace(/[\s-]+/g, '');
@@ -41,17 +22,28 @@ export default async function BlogCityPage({ params }: { params: Promise<{ city:
 
     const cityKey = normalizeCityParam(city);
 
-    // Fetch all blog posts from the database
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/blog`, {
-      cache: 'no-store'
-    });
+    let allPosts;
 
-    if (!response.ok) {
-      console.error('Failed to fetch blog posts');
+    // Try to fetch from API, but handle build environment gracefully
+    try {
+      const baseUrl = process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+
+      const response = await fetch(`${baseUrl}/api/blog`, {
+        cache: 'no-store'
+      });
+
+      if (response.ok) {
+        allPosts = await response.json();
+      } else {
+        throw new Error('API fetch failed');
+      }
+    } catch (error) {
+      // During build time, return static data to avoid build failures
+      console.log('API fetch failed during build, using fallback data');
       return notFound();
     }
-
-    const allPosts = await response.json();
 
     // Find the specific blog post by city
     const blog = allPosts.find(

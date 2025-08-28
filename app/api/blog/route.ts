@@ -1,16 +1,16 @@
 /** @format */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { createPrismaClient } from '../../../lib/prisma';
 
 // Force this route to be dynamic (not pre-rendered)
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function GET() {
+	let prisma;
 	try {
+		prisma = await createPrismaClient();
 		const posts = await prisma.blogPost.findMany({
 			orderBy: {
 				createdAt: 'desc',
@@ -21,11 +21,17 @@ export async function GET() {
 	} catch (error) {
 		console.error('Error fetching blog posts:', error);
 		return NextResponse.json({ error: 'Failed to fetch blog posts' }, { status: 500 });
+	} finally {
+		if (prisma) {
+			await prisma.$disconnect();
+		}
 	}
 }
 
 export async function POST(req: NextRequest) {
+	let prisma;
 	try {
+		prisma = await createPrismaClient();
 		const data = await req.json();
 		// Only allow fields defined in the model
 		const { city, image, excerpt, content } = data;
@@ -46,5 +52,9 @@ export async function POST(req: NextRequest) {
 	} catch (e) {
 		const message = e instanceof Error ? e.message : 'Unknown error';
 		return NextResponse.json({ error: message }, { status: 500 });
+	} finally {
+		if (prisma) {
+			await prisma.$disconnect();
+		}
 	}
 }
