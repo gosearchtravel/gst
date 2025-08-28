@@ -14,17 +14,31 @@ export default function BlogPostsCarousel() {
     const fetchPosts = async () => {
       try {
         setLoading(true);
+        setError(null);
         const response = await fetch('/api/blog');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        setPosts(data);
-        setError(null);
+
+        // Check if the response has an error property (API error response)
+        if (data && typeof data === 'object' && 'error' in data) {
+          throw new Error(data.error as string);
+        }
+
+        // Ensure data is an array before setting it
+        if (Array.isArray(data)) {
+          setPosts(data);
+          setError(null);
+        } else {
+          console.warn('API returned non-array data:', data);
+          setPosts([]);
+          setError('Invalid data format received');
+        }
       } catch (err) {
         console.error('Error fetching blog posts:', err);
-        setError('Failed to load blog posts');
-        // Set fallback posts to prevent empty carousel
+        setError(err instanceof Error ? err.message : 'Failed to load blog posts');
+        // Ensure posts is always an array
         setPosts([]);
       } finally {
         setLoading(false);
@@ -42,6 +56,14 @@ export default function BlogPostsCarousel() {
     return () => clearInterval(interval);
   }, []);
 
+  // Safety effect to ensure posts is always an array
+  useEffect(() => {
+    if (!Array.isArray(posts)) {
+      console.warn('Posts state is not an array, resetting to empty array:', posts);
+      setPosts([]);
+    }
+  }, [posts]);
+
   function citySlug(city: string) {
     return city.toLowerCase().replace(/[\s-]+/g, '');
   }
@@ -52,6 +74,9 @@ export default function BlogPostsCarousel() {
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
   }
+
+  // Safety function to ensure posts is always an array
+  const safePosts = Array.isArray(posts) ? posts : [];
 
   return (
     <ErrorBoundary>
@@ -66,7 +91,7 @@ export default function BlogPostsCarousel() {
             <div className="text-center py-8">
               <div className="text-red-600">{error}</div>
             </div>
-          ) : posts.length === 0 ? (
+          ) : safePosts.length === 0 ? (
             <div className="text-center py-8">
               <div className="text-gray-600">No blog posts available.</div>
             </div>
@@ -79,7 +104,7 @@ export default function BlogPostsCarousel() {
               className="w-full"
             >
               <CarouselContent className="gap-x-6 gap-y-6 p-4">
-                {posts.map(post => (
+                {safePosts.map(post => (
                   <CarouselItem
                     key={post.city}
                     className="basis-full sm:basis-1/3 lg:basis-1/4 flex"
