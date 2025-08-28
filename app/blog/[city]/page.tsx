@@ -1,6 +1,7 @@
 
 
 import { notFound } from 'next/navigation';
+import { getBlogPosts } from '../../../lib/getBlogPosts';
 import BlogMenuClient from './BlogMenuClient';
 import { BlogPost } from '../../../types/blog';
 
@@ -31,23 +32,14 @@ export default async function BlogCityPage({ params }: { params: Promise<{ city:
   let blog: BlogPost | null = null;
 
   try {
-    // Use absolute URL for SSR compatibility
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    const response = await fetch(`${baseUrl}/api/blog`, {
-      cache: 'no-store'
-    });
-
-    if (response.ok) {
-      allPosts = await response.json();
-      console.log('Blog detail page: allPosts from API:', allPosts.map((p: BlogPost) => p.city));
-      blog = allPosts.find((p: BlogPost) => normalizeCityParam(p.city) === cityKey) || null;
-      if (!blog) {
-        console.log('Blog detail page: no match for cityKey:', cityKey, 'in posts:', allPosts.map((p: BlogPost) => normalizeCityParam(p.city)));
-      }
+    allPosts = await getBlogPosts();
+    console.log('Blog detail page: allPosts from DB:', allPosts.map((p: BlogPost) => p.city));
+    blog = allPosts.find((p: BlogPost) => normalizeCityParam(p.city) === cityKey) || null;
+    if (!blog) {
+      console.log('Blog detail page: no match for cityKey:', cityKey, 'in posts:', allPosts.map((p: BlogPost) => normalizeCityParam(p.city)));
     }
   } catch (error) {
     console.error('Error fetching blog data:', error);
-    // Return notFound instead of throwing during runtime
     return notFound();
   }
 
