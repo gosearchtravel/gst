@@ -78,22 +78,49 @@ export async function POST() {
 					"Enjoy stunning harbors, beautiful beaches, and iconic landmarks in Australia's premier city.",
 				content: `<p>Sydney captivates visitors with its stunning natural beauty and vibrant urban culture.</p><p>Marvel at the iconic Sydney Opera House and Harbour Bridge, relax on world-famous Bondi Beach, and explore the historic Rocks district.</p><p>Take a ferry across the spectacular harbor, discover diverse neighborhoods, and enjoy fresh seafood with harbor views.</p><p>With its perfect climate, friendly locals, and endless outdoor activities, Sydney embodies the best of Australian lifestyle.</p>`,
 			},
+			{
+				city: 'Cape Town',
+				image: '/popdest/capetown.webp',
+				excerpt: 'Discover breathtaking landscapes, vibrant culture, and world-class wines in Cape Town.',
+				content: `<p>Cape Town is a stunning city at the tip of Africa, famous for Table Mountain, beautiful beaches, and rich history.</p><p>Explore the V&A Waterfront, hike up Lion's Head, and visit Robben Island.</p><p>Enjoy local cuisine, vibrant markets, and the scenic Cape Winelands.</p><p>Cape Town offers adventure, relaxation, and cultural experiences for every traveler.</p>`,
+			},
+			{
+				city: 'Los Angeles',
+				image: '/popdest/losangeles.jpg',
+				excerpt: 'Experience Hollywood glamour, sunny beaches, and diverse neighborhoods in Los Angeles.',
+				content: `<p>Los Angeles is the entertainment capital of the world, home to Hollywood, beautiful beaches, and iconic attractions.</p><p>Visit the Walk of Fame, Griffith Observatory, and Santa Monica Pier.</p><p>Explore trendy neighborhoods like Venice Beach and Silver Lake, and enjoy world-class dining and shopping.</p><p>LA's creative energy and laid-back lifestyle make it a must-visit destination.</p>`,
+			},
 		];
 
-		// Create blog posts in database
-		const createdPosts = [];
+		// Upsert blog posts in database
+		const upsertedPosts = [];
 		for (const post of blogPosts) {
-			const created = await prisma.blogPost.create({
-				data: post,
-			});
-			createdPosts.push(created);
-			console.log(`✅ Created blog post for ${post.city}`);
+			try {
+				const upserted = await prisma.blogPost.upsert({
+					where: { city: post.city },
+					update: {
+						image: post.image,
+						excerpt: post.excerpt,
+						content: post.content,
+					},
+					create: {
+						city: post.city,
+						image: post.image,
+						excerpt: post.excerpt,
+						content: post.content,
+					},
+				});
+				upsertedPosts.push(upserted);
+				console.log(`✅ Upserted blog post for ${post.city}`);
+			} catch (error) {
+				console.error(`❌ Failed to upsert blog post for ${post.city}:`, error);
+			}
 		}
 
 		return NextResponse.json({
 			success: true,
-			message: `Successfully seeded ${createdPosts.length} blog posts`,
-			posts: createdPosts,
+			message: `Successfully upserted ${upsertedPosts.length} blog posts`,
+			posts: upsertedPosts,
 		});
 	} catch (error) {
 		console.error('Error seeding database:', error);
