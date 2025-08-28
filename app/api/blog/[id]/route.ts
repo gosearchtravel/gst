@@ -1,6 +1,9 @@
 /** @format */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 // Force this route to be dynamic (not pre-rendered)
 export const dynamic = 'force-dynamic';
@@ -16,19 +19,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 			return NextResponse.json({ error: 'Invalid ID parameter' }, { status: 400 });
 		}
 
-		// Mock response for now to avoid Vercel build issues
-		// In production, you would connect to your actual database
-		const mockPost = {
-			id: numericId,
-			city: 'Sample City',
-			image: '/sample-image.jpg',
-			excerpt: 'This is a sample blog post excerpt',
-			content: 'This is sample blog post content',
-			createdAt: new Date().toISOString(),
-			updatedAt: new Date().toISOString(),
-		};
+		const post = await prisma.blogPost.findUnique({
+			where: { id: numericId },
+		});
 
-		return NextResponse.json(mockPost);
+		if (!post) {
+			return NextResponse.json({ error: 'Blog post not found' }, { status: 404 });
+		}
+
+		return NextResponse.json(post);
 	} catch (error) {
 		console.error('Error fetching blog post:', error);
 		return NextResponse.json({ error: 'Failed to fetch blog post' }, { status: 500 });
@@ -46,12 +45,20 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 			return NextResponse.json({ error: 'Invalid ID parameter' }, { status: 400 });
 		}
 
-		// Mock response for now to avoid Vercel build issues
-		const updatedPost = {
-			id: numericId,
-			...data,
-			updatedAt: new Date().toISOString(),
-		};
+		const { city, image, excerpt, content } = data;
+		if (!city || !image || !excerpt || !content) {
+			return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+		}
+
+		const updatedPost = await prisma.blogPost.update({
+			where: { id: numericId },
+			data: {
+				city,
+				image,
+				excerpt,
+				content,
+			},
+		});
 
 		return NextResponse.json(updatedPost);
 	} catch (error) {
@@ -70,8 +77,11 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 			return NextResponse.json({ error: 'Invalid ID parameter' }, { status: 400 });
 		}
 
-		// Mock response for now to avoid Vercel build issues
-		return NextResponse.json({ success: true });
+		await prisma.blogPost.delete({
+			where: { id: numericId },
+		});
+
+		return NextResponse.json({ message: 'Blog post deleted successfully' });
 	} catch (error) {
 		console.error('Error deleting blog post:', error);
 		return NextResponse.json({ error: 'Failed to delete blog post' }, { status: 500 });

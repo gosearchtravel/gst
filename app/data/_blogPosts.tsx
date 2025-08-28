@@ -44,4 +44,24 @@ export const blogPosts = [
     image: '/popdest/capetown.webp',
     excerpt: 'Explore Table Mountain, beautiful beaches, and vibrant culture in Cape Town.',
   },
+  {
+    city: 'bangkok',
+    image: '/popdest/bangkok.jpg',
+    excerpt: 'Discover temples, street food, floating markets, and vibrant nightlife in Bangkok.',
+  },
+  {
+    city: 'dubai',
+    image: '/popdest/dubai.jpg',
+    excerpt: 'Experience luxury shopping, stunning architecture, and desert adventures in Dubai.',
+  },
+  {
+    city: 'singapore',
+    image: '/popdest/singapore.webp',
+    excerpt: 'Explore the garden city with its modern skyline, diverse cuisine, and cultural attractions.',
+  },
+  {
+    city: 'hong kong',
+    image: '/popdest/hongkong.jpg',
+    excerpt: 'Experience the fusion of East and West with stunning harbor views and dim sum.',
+  },
 ];
