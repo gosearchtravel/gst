@@ -96,16 +96,17 @@ export async function POST() {
 		let createdCount = 0;
 		for (const post of blogPosts) {
 			try {
+				const normalizedCity = post.city.toLowerCase().replace(/\s+/g, '');
 				await prisma.blogPost.create({
 					data: {
-						city: post.city,
+						city: normalizedCity,
 						image: post.image,
 						excerpt: post.excerpt,
 						content: post.content,
 					},
 				});
 				createdCount++;
-				console.log(`✅ Created blog post for ${post.city}`);
+				console.log(`✅ Created blog post for ${normalizedCity}`);
 			} catch (error) {
 				console.error(`❌ Failed to create blog post for ${post.city}:`, error);
 			}

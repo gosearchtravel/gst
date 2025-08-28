@@ -17,10 +17,12 @@ export default async function BlogCityPage({ params }: { params: Promise<{ city:
   const city = resolvedParams?.city;
 
   if (!city) {
+    console.log('No city param found in route params:', resolvedParams);
     return notFound();
   }
 
   const cityKey = normalizeCityParam(city);
+  console.log('Blog detail page: searching for cityKey:', cityKey);
 
   // Since this is a dynamic route, we'll fetch data at runtime only
   // This prevents any build-time database access issues
@@ -29,13 +31,19 @@ export default async function BlogCityPage({ params }: { params: Promise<{ city:
   let blog: BlogPost | null = null;
 
   try {
-    const response = await fetch('/api/blog', {
+    // Use absolute URL for SSR compatibility
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const response = await fetch(`${baseUrl}/api/blog`, {
       cache: 'no-store'
     });
 
     if (response.ok) {
       allPosts = await response.json();
+      console.log('Blog detail page: allPosts from API:', allPosts.map((p: BlogPost) => p.city));
       blog = allPosts.find((p: BlogPost) => normalizeCityParam(p.city) === cityKey) || null;
+      if (!blog) {
+        console.log('Blog detail page: no match for cityKey:', cityKey, 'in posts:', allPosts.map((p: BlogPost) => normalizeCityParam(p.city)));
+      }
     }
   } catch (error) {
     console.error('Error fetching blog data:', error);
